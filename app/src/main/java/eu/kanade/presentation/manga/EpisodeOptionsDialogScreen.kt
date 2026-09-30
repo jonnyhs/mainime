@@ -63,10 +63,12 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.images.WebImage
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.animesource.AnimeSource
+import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.animesource.model.Hoster
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.ui.webview.WebViewCaptureActivity
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel.ExceptionWithStringResource
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.HosterState
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.QualitySheetHosterContent
@@ -91,6 +93,7 @@ import tachiyomi.domain.anime.interactor.GetAnime
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.episode.interactor.GetEpisode
 import tachiyomi.domain.episode.model.Episode
+import tachiyomi.domain.episode.model.toSEpisode
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
@@ -115,6 +118,7 @@ class EpisodeOptionsDialogScreen(
 
     @Composable
     override fun Content() {
+        val context = LocalContext.current
         val sm = rememberScreenModel {
             EpisodeOptionsDialogScreenModel(
                 episodeId = episodeId,
@@ -145,6 +149,12 @@ class EpisodeOptionsDialogScreen(
             onClickHoster = sm::onClickHoster,
             onClickVideo = sm::onClickVideo,
             getHosterList = sm::getHosterList,
+            onOpenWebCapture = {
+                sm.getEpisodePageUrl()?.let { url ->
+                    context.startActivity(WebViewCaptureActivity.newIntent(context, url, animeId, episodeId))
+                    EpisodeOptionsDialogScreen.onDismissDialog()
+                }
+            },
         )
     }
 
@@ -406,6 +416,11 @@ class EpisodeOptionsDialogScreenModel(
             }
         }
     }
+
+    fun getEpisodePageUrl(): String? {
+        val source = _source.value as? AnimeHttpSource ?: return null
+        return _episode.value?.let { source.getEpisodeUrl(it.toSEpisode()) }
+    }
 }
 
 @Composable
@@ -423,10 +438,8 @@ fun EpisodeOptionsDialog(
     onClickHoster: (Int) -> Unit,
     onClickVideo: (Int, Int) -> Unit,
     getHosterList: () -> List<Hoster>?,
+    onOpenWebCapture: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-
     Column(
         modifier = Modifier
             .animateContentSize()
@@ -451,16 +464,9 @@ fun EpisodeOptionsDialog(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        val onError: () -> Unit = {
-            logcat(LogPriority.ERROR) { "Error getting links" }
-            scope.launchUI { context.toast(AYMR.strings.no_available_videos) }
-            EpisodeOptionsDialogScreen.onDismissDialog()
-        }
-        if (resultList?.isFailure == true) {
-            onError()
-        }
-
-        if (resultList == null || episode == null || anime == null || currentVideo == null) {
+        if (resultList?.isFailure == true || (resultList?.getOrNull()?.isEmpty() == true)) {
+            VideoCaptureFallback(onOpenWebCapture)
+        } else if (resultList == null || episode == null || anime == null || currentVideo == null) {
             LoadingScreen()
         } else {
             val hosterStateList = resultList.getOrNull()
@@ -479,11 +485,23 @@ fun EpisodeOptionsDialog(
                     onClickVideo = onClickVideo,
                     getHosterList = getHosterList,
                 )
-            } else {
-                onError()
             }
         }
     }
+}
+
+@Composable
+private fun VideoCaptureFallback(onOpenWebCapture: () -> Unit) {
+    Text(
+        text = stringResource(AMR.strings.webview_capture_unavailable_videos),
+        modifier = Modifier.padding(horizontal = TabbedDialogPaddings.Horizontal),
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    ClickableRow(
+        text = stringResource(AMR.strings.action_open_webview_capture),
+        icon = Icons.AutoMirrored.Outlined.OpenInNew,
+        onClick = onOpenWebCapture,
+    )
 }
 
 @Composable

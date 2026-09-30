@@ -287,6 +287,11 @@
             android:theme="@style/Theme.Tachiyomi" />
 
         <activity
+            android:name=".ui.webview.WebViewCaptureActivity"
+            android:configChanges="uiMode|orientation|screenSize"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.webview.WebViewActivity"
             android:configChanges="uiMode|orientation|screenSize"
             android:exported="false" />

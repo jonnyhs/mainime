@@ -239,4 +239,9 @@
 
     <string name="action_clear_anime">Clear anime</string>
     <string name="episodes_from_database">Episodes &amp; History from Database</string>
+    <string name="webview_capture_unavailable_videos">No videos were found. Open the episode in WebView and capture the video link.</string>
+    <string name="action_open_webview_capture">Open in WebView and capture</string>
+    <string name="webview_capture_links">Captured video links (%1$d)</string>
+    <string name="action_play_captured_video">Play</string>
+    <string name="action_download_captured_video">Download</string>
 </resources>
