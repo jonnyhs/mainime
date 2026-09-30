@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddLink
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material.icons.outlined._18UpRating
@@ -21,6 +22,7 @@ import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
+import eu.kanade.tachiyomi.ui.browse.custom.AddByUrlScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen.SmartSearchConfig
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
@@ -31,6 +33,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -55,6 +58,13 @@ fun Screen.sourcesTab(
                 icon = Icons.Outlined.TravelExplore,
                 onClick = { navigator.push(GlobalSearchScreen(smartSearchConfig?.origTitle ?: "")) },
             ),
+            // ANK -->
+            AppBar.Action(
+                title = stringResource(AMR.strings.add_by_url),
+                icon = Icons.Outlined.AddLink,
+                onClick = { navigator.push(AddByUrlScreen()) },
+            ),
+            // ANK <--
             // KMK -->
             AppBar.Action(
                 title = stringResource(KMR.strings.action_toggle_nsfw_only),

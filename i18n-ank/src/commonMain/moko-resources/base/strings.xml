@@ -239,4 +239,13 @@
 
     <string name="action_clear_anime">Clear anime</string>
     <string name="episodes_from_database">Episodes &amp; History from Database</string>
+
+    <!-- ANK: add an anime without an installed extension -->
+    <string name="add_by_url">Add by URL</string>
+    <string name="add_by_url_description">Enter the anime details, then open the site to find its episode.</string>
+    <string name="add_by_url_title">Anime title</string>
+    <string name="add_by_url_site">Site URL</string>
+    <string name="add_by_url_cover">Cover image URL (optional)</string>
+    <string name="add_by_url_open_site">Open site</string>
+    <string name="action_cancel">Cancel</string>
 </resources>
