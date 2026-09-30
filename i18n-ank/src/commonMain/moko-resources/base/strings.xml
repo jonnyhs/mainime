@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Downloads -->
+    <string name="pref_update_ytdlp">Update yt-dlp</string>
+    <string name="pref_update_ytdlp_summary">Download the latest yt-dlp extractor definitions</string>
+
     <string name="pref_app_icon">App icon</string>
     <string name="pref_app_icon_toast">App icon changed to %s</string>
     <string name="episode_progress_short">%1$s/%2$s</string>

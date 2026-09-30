@@ -6,10 +6,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.tachiyomi.data.download.ExternalDownloadEngine
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
@@ -17,6 +19,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -46,6 +49,8 @@ object SettingsDownloadScreen : SearchableSettings {
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
         val parallelSourceLimit by downloadPreferences.parallelSourceLimit().collectAsState()
         val basePreferences = remember { Injekt.get<BasePreferences>() }
+        val externalDownloadEngine = remember { Injekt.get<ExternalDownloadEngine>() }
+        val coroutineScope = rememberCoroutineScope()
         return listOf(
             Preference.PreferenceItem.SwitchPreference(
                 preference = downloadPreferences.downloadOnlyOverWifi(),
@@ -79,6 +84,13 @@ object SettingsDownloadScreen : SearchableSettings {
                 downloadPreferences = downloadPreferences,
                 basePreferences = basePreferences,
             ),
+            // ANK --> yt-dlp's extractor definitions can be updated independently of the APK.
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(AMR.strings.pref_update_ytdlp),
+                subtitle = stringResource(AMR.strings.pref_update_ytdlp_summary),
+                onClick = { coroutineScope.launch { externalDownloadEngine.updateYoutubeDl() } },
+            ),
+            // ANK <--
         )
     }
 
