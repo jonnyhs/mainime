@@ -202,6 +202,9 @@ kotlin {
 }
 
 dependencies {
+    // ANK --> yt-dlp runs first for sites that require extractor support.
+    implementation(aniyomilibs.youtubedl.android)
+    // ANK <--
     implementation(projects.i18n)
     implementation(projects.i18nAniyomi)
     // KMK -->

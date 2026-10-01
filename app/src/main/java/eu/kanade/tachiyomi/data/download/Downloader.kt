@@ -92,6 +92,9 @@ class Downloader(
     private val context: Context,
     private val provider: DownloadProvider,
     private val cache: DownloadCache,
+    // ANK -->
+    private val externalDownloadEngine: ExternalDownloadEngine = Injekt.get(),
+    // ANK <--
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
 ) {
@@ -521,7 +524,20 @@ class Downloader(
                 if (isTor(download.video!!)) {
                     torrentDownload(download, tmpDir, videoFile, filename)
                 } else {
-                    ffmpegDownload(download, tmpDir, videoFile, filename)
+                    // ANK --> Prefer yt-dlp for extractors and protected video hosts. FFmpeg is
+                    // retained as the HLS/DASH fallback inside the engine.
+                    val video = download.video!!
+                    val headers = video.headers ?: download.source.headers
+                    externalDownloadEngine.download(
+                        url = video.videoUrl,
+                        headers = headers,
+                        cookies = headers["Cookie"],
+                        destination = videoFile,
+                        onProgress = { download.progress = it },
+                        ffmpegFallback = { ffmpegDownload(download, tmpDir, videoFile, filename) },
+                    )
+                    tmpDir.findFile("$filename.tmp")?.renameTo("$filename.mkv")
+                    // ANK <--
                 }
             } catch (e: Exception) {
                 videoFile.delete()

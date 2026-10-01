@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
+import eu.kanade.tachiyomi.data.download.ExternalDownloadEngine
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.track.TrackerManager
@@ -165,6 +166,9 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { ExtensionManager(app) }
 
         addSingletonFactory { DownloadProvider(app) }
+        // ANK -->
+        addSingletonFactory { ExternalDownloadEngine(app) }
+        // ANK <--
         addSingletonFactory { DownloadManager(app) }
         addSingletonFactory { DownloadCache(app) }
 

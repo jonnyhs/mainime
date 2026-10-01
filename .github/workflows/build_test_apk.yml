@@ -1,0 +1,67 @@
+name: Build test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'codex/**'
+
+concurrency:
+  group: build-test-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Assemble debug APK
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge other Codex feature branches
+        run: |
+          set -e
+          git config user.email "ci@github-actions"
+          git config user.name "GitHub Actions"
+          git fetch origin \
+            codex/add-download-engine-with-yt-dlp-and-ffmpeg \
+            codex/adicionar-captura-de-video-pelo-webview \
+            codex/add-feature-to-add-site-by-url || true
+          for b in \
+            origin/codex/add-download-engine-with-yt-dlp-and-ffmpeg \
+            origin/codex/adicionar-captura-de-video-pelo-webview \
+            origin/codex/add-feature-to-add-site-by-url; do
+            if git rev-parse --verify "$b" >/dev/null 2>&1; then
+              git merge -X theirs "$b" -m "ci: merge $b" || true
+            fi
+          done
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Collect APKs
+        run: |
+          mkdir -p out-apk
+          find app/build/outputs/apk -name '*.apk' -exec cp {} out-apk/ \;
+          ls -lah out-apk/
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mainime-test-apk
+          path: out-apk/*.apk
+          retention-days: 7
